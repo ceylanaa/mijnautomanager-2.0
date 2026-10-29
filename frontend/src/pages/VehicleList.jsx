@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import useVehicles from '../hooks/useVehicles';
 import EmptyState from '../components/EmptyState';
 import Notice from '../components/Notice';
@@ -8,12 +8,15 @@ import VehicleCard from '../components/VehicleCard';
 // S03 Mijn voertuigen.
 export default function VehicleList() {
   const { records, loading, error, reload } = useVehicles();
+  const message = useLocation().state?.message;
 
   return (
     <>
       <PageHeading eyebrow="JOUW OVERZICHT" title="Goed op weg." description="Je auto's overzichtelijk bij elkaar.">
         <Link className="button primary" to="/kenteken"><span aria-hidden="true">＋</span> Auto toevoegen</Link>
       </PageHeading>
+
+      <Notice>{message}</Notice>
 
       <div className="section-title">
         <h2>Mijn auto's</h2>

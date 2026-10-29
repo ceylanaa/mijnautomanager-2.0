@@ -10,3 +10,26 @@
   max-width: 700px;
   margin-bottom: 24px;
 }
+
+.maintenance-section {
+  max-width: 700px;
+  margin-top: 24px;
+}
+
+.section-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.section-header h2 {
+  margin: 0;
+}
+
+.maintenance-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
