@@ -41,19 +41,23 @@ export function createNoviApi({ baseUrl, projectId }) {
       ...(body ? { body: JSON.stringify(body) } : {}),
     });
   }
-  async function vehicles(session, signal) {
+  // Haalt alle pagina's van een collectie op. Nooit een onvolledige lijst teruggeven alsof die compleet is.
+  async function allPages(path, session, signal) {
     const all = [], seen = new Set();
-    // Bounded paging: never return an incomplete list as if it were complete.
+    const separator = path.includes('?') ? '&' : '?';
     for (let offset = 0; offset < 10000; offset += 100) {
-      const page = rows(await request(`/vehicles?limit=100&offset=${offset}&sort=id`, { token: session.token, signal }));
+      const page = rows(await request(`${path}${separator}limit=100&offset=${offset}&sort=id`, { token: session.token, signal }));
       for (const row of page) {
         const id = referenceId(row.id);
-        if (id === null || seen.has(id)) throw new ApiError('De voertuiglijst kon niet volledig worden opgehaald. Controleer de paginering.');
+        if (id === null || seen.has(id)) throw new ApiError('De lijst kon niet volledig worden opgehaald. Controleer de paginering.');
         seen.add(id); all.push(row);
       }
-      if (page.length < 100) return ownVehicles(all, session.user.id);
+      if (page.length < 100) return all;
     }
-    throw new ApiError('De voertuiglijst is te groot om volledig te verwerken.');
+    throw new ApiError('De lijst is te groot om volledig te verwerken.');
+  }
+  async function vehicles(session, signal) {
+    return ownVehicles(await allPages('/vehicles', session, signal), session.user.id);
   }
   // Controleert vóór een wijziging of het record echt in het eigen gefilterde overzicht staat.
   async function ownVehicle(session, vehicleId) {
@@ -63,6 +67,7 @@ export function createNoviApi({ baseUrl, projectId }) {
   }
   return {
     request,
+    allPages,
     ownVehicle,
     async updateNickname(session, vehicleId, nickname) {
       if (nickname.trim().length > 100) throw new ApiError('De bijnaam mag maximaal 100 tekens bevatten.');
