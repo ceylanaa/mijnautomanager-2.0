@@ -59,6 +59,7 @@ export default function SearchVehicle() {
     resetResult();
     if (!validPlate(plate)) {
       setError('Vul een kenteken met alleen letters en cijfers in.');
+      document.getElementById('plate')?.focus();
       return;
     }
 
