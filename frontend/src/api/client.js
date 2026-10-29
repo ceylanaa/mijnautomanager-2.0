@@ -27,6 +27,9 @@ function rows(value) {
 export function createNoviApi({ baseUrl, projectId }) {
   const base = baseUrl.replace(/\/$/, '');
   function request(path, { token, body, ...options } = {}) {
+    if (!base || !projectId) {
+      return Promise.reject(new ApiError('De NOVI-configuratie ontbreekt. Maak een .env-bestand aan volgens de README en start de app opnieuw.'));
+    }
     return jsonRequest(`${base}/api${path}`, {
       ...options, headers: { 'novi-education-project-id': projectId, ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) },
       ...(body ? { body: JSON.stringify(body) } : {}),
@@ -96,7 +99,8 @@ export async function searchRdw(plate, signal) {
   if (!Array.isArray(fuelRows) || fuelRows.some(row => row.kenteken !== key)) throw new ApiError('De brandstofgegevens konden niet worden gekoppeld. Probeer het opnieuw.');
   return { licensePlate: key, brand: record.merk || 'Niet beschikbaar', model: record.handelsbenaming || 'Niet beschikbaar', year: record.datum_eerste_toelating?.slice(0, 4) || 'Niet beschikbaar', fuel: [...new Set(fuelRows.map(row => row.brandstof_omschrijving).filter(Boolean))].join(' / ') || 'Niet beschikbaar', apk: record.vervaldatum_apk, source: 'rdw' };
 }
+// De NOVI-instellingen komen uit .env (zie .env.example en README), niet uit de broncode.
 export const novi = createNoviApi({
-  baseUrl: import.meta.env.VITE_NOVI_URL || 'https://novi-backend-api-wgsgz.ondigitalocean.app',
-  projectId: import.meta.env.VITE_NOVI_PROJECT_ID || 'd153089f-ba2d-4564-912c-4204900eec14',
+  baseUrl: import.meta.env.VITE_NOVI_URL || '',
+  projectId: import.meta.env.VITE_NOVI_PROJECT_ID || '',
 });
