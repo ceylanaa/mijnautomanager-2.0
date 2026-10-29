@@ -60,3 +60,17 @@ describe('S07 scherm', () => {
     expect(screen.getByRole('link', { name: 'Garages' })).toHaveAttribute('href', '/garages');
   });
 });
+
+describe('mobiel menu', () => {
+  it('klapt open en dicht met de menuknop', async () => {
+    sessionStorage.setItem('mam-session', JSON.stringify({ mode: 'demo', user: { id: 1 } }));
+    render(<MemoryRouter initialEntries={['/garages']}><AuthProvider><App /></AuthProvider></MemoryRouter>);
+    const user = userEvent.setup();
+    const toggle = screen.getByRole('button', { name: /Menu/ });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await user.click(screen.getByRole('link', { name: 'Kenteken' }));
+    expect(screen.getByRole('button', { name: /Menu/ })).toHaveAttribute('aria-expanded', 'false');
+  });
+});
