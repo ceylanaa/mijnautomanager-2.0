@@ -125,11 +125,47 @@ Zie de [README](README.md) voor de benodigdheden, de `.env`-variabelen, het stap
 
 ## 8. Reflectie
 
-> **TODO (student):** Schrijf hier je eigen reflectie. Bijvoorbeeld:
->
-> - Wat ging goed en waar ben je trots op?
-> - Wat was lastig (bijvoorbeeld de afwijkende NOVI-datumnotatie, de RDW-paginering of de filtering op gebruiker) en hoe heb je dat opgelost?
-> - Wat zou je een volgende keer anders doen?
-> - Wat heb je geleerd over React, asynchrone verzoeken en toegankelijkheid?
+### 8.1 Wat ging goed
 
-> **TODO (student):** Reflecteer per gemaakte keuze uit hoofdstuk 2 kort op het alternatief (bijvoorbeeld Context tegenover Redux, of eigen CSS tegenover een UI-bibliotheek).
+Ik ben tevreden dat alle vier de hoofdfuncties uit de ideefase werken: inloggen en registreren, mijn auto's met onderhoud, APK en gebreken, en garages zoeken. Wat goed werkte, was om per scherm uit het ontwerp (S01–S08) een eigen branch te maken en die pas af te ronden als de tests en de build slaagden. Zo had ik steeds een werkende versie en wist ik precies waar ik mee bezig was.
+
+Ook ben ik blij met de eigen hooks. In het begin stond in bijna elke pagina dezelfde code voor laden, fout en opnieuw proberen. Toen ik dat naar `useVehicles`, `useMaintenance` en later `useRequest` verplaatste, werden de pagina's een stuk korter en makkelijker te lezen. Hier heb ik echt gezien waarom je in React logica los trekt van de weergave.
+
+### 8.2 Wat was lastig en hoe heb ik het opgelost
+
+- **De NOVI-datumnotatie.** In de Swagger staat `maintenanceDate` als `number`, dus ik stuurde eerst een tijdstempel mee. Ik kreeg steeds een 406 terug en begreep niet waarom. Pas toen ik met losse verzoeken ging testen, zag ik dat NOVI alleen een datum als tekst (`"2026-10-01"`) accepteert. Bij bewerken bleek `PUT` ook nog het `id` in de body te willen. Ik heb hiervan geleerd om documentatie niet blind te vertrouwen en zelf kleine tests te doen.
+- **Alleen mijn eigen voertuigen tonen.** Ik ging ervan uit dat `GET /api/vehicles` alleen mijn voertuigen teruggaf, maar ik zag ineens auto's van andere studenten. Daarom zoek ik na het inloggen mijn eigen gebruikers-id op en filter ik daarop. Ik toon liever een foutmelding dan een lijst die misschien niet klopt.
+- **De RDW-datasets.** Een paar dataset-ID's uit mijn ideefase bleken niet te kloppen of bestonden niet meer. Van `8ys7-d773` dacht ik dat de codetabel van gebreken was, maar het is de brandstoftabel. Ook kreeg ik bij sommige kentekens maar een deel van de gebreken terug, omdat de RDW per pagina een maximum teruggeeft. Ik heb de paginering toegevoegd en daarna de telling vergeleken met wat de RDW zelf aangeeft.
+- **CORS.** Een tijd lang werkte inloggen bij mij niet, terwijl de code goed leek. Uiteindelijk bleek dat ik de app via `127.0.0.1` opende in plaats van `localhost`. NOVI staat alleen `http://localhost:5173` toe. Nu start `npm run dev` altijd op `localhost` met een vaste poort, en geeft de inlogpagina een melding.
+- **Oude antwoorden die te laat binnenkomen.** Als ik snel uitlogde of naar de demo wisselde terwijl een login nog liep, kwam het oude antwoord soms later binnen en was ik toch weer ingelogd. Dat heb ik opgelost met een teller (`loginVersion`) in de `AuthContext`: bij uitloggen of de demo starten gaat die omhoog, en een loginantwoord met een oude waarde wordt genegeerd. Hier heb ik veel geleerd over asynchroon werken.
+- **Toegankelijkheid.** Het bevestigingsvenster was eerst alleen met de muis goed te gebruiken. Met Tab kwam je achter het venster op de pagina terecht. Ik heb de focus binnen het venster gehouden en Escape laten annuleren. Ik test nu ook met alleen het toetsenbord, wat ik eerst nooit deed.
+
+### 8.3 Wat kan de volgende keer beter: voorzichtig zijn met `git rebase`
+
+Het grootste wat misging in dit project had niets met React te maken, maar met Git. Halverwege wilde ik mijn geschiedenis netter maken. Een aantal commitberichten en branchnamen vond ik onduidelijk, en ik wilde dat ze beter beschreven wat ik had gedaan. Daarvoor gebruikte ik `git rebase -i` op een branch die ik al naar GitHub had gepusht.
+
+Het probleem was dat mijn pull requests op elkaar gestapeld waren: elke feature-branch bouwde voort op de vorige. Door de rebase kreeg de onderste branch nieuwe commits met nieuwe hashes, maar de branches daarboven verwezen nog naar de oude commits. Daardoor zag ik in de pull requests ineens dubbele commits en conflicten die er eerst niet waren. Ik heb toen geprobeerd het te herstellen met nog een rebase en een force push, maar dat maakte het alleen maar ingewikkelder. Commits die al in `main` gemerged waren, kon ik bovendien helemaal niet meer aanpassen zonder de geschiedenis van `main` te herschrijven.
+
+Uiteindelijk heb ik besloten om opnieuw te beginnen in een nieuwe repository (`mijnautomanager-2.0`). Daarin heb ik het project branch voor branch opnieuw opgebouwd, met dezelfde code. Na elke commit heb ik gecontroleerd of de tests en de build nog slaagden. Dat kostte me een flinke avond, maar het resultaat is een geschiedenis die wel klopt.
+
+Wat ik hiervan heb geleerd:
+
+- **Herschrijf geen geschiedenis die al gepusht is**, zeker niet als andere branches of pull requests erop voortbouwen. Wil ik iets terugdraaien, dan gebruik ik liever `git revert`. Dat maakt een nieuwe commit en laat de bestaande geschiedenis heel.
+- **Maak eerst een back-up-branch** (`git branch backup-voor-rebase`) voordat ik iets als een rebase doe. Dan kan ik altijd terug. Ook `git reflog` had me kunnen helpen; die kende ik toen nog niet goed.
+- **Schrijf meteen goede commitberichten en branchnamen.** Dan hoef je achteraf niets op te schonen. Ik houd nu de vorm `feat:`, `fix:`, `test:` en `docs:` aan, met een korte Nederlandse zin.
+- **Merge pull requests eerder** in plaats van ze lang op elkaar te stapelen. Hoe hoger de stapel, hoe meer er misgaat als je onderaan iets verandert.
+- **Gebruik nooit `git push --force` op een gedeelde branch.** Als het echt moet op mijn eigen branch, dan met `--force-with-lease`, zodat ik niet per ongeluk werk overschrijf.
+
+Mijn conclusie is dat Git net zo belangrijk is als de code zelf. Een rebase is een handig hulpmiddel, maar alleen voor lokale commits die nog niemand anders heeft. Volgende keer denk ik eerst na over wat een commando met de rest van mijn branches doet, voordat ik het uitvoer.
+
+### 8.4 Reflectie op de gemaakte keuzes
+
+- **React met JavaScript zonder extra frameworks (2.1).** Met TypeScript had ik fouten zoals het verkeerde type van `maintenanceDate` misschien eerder gezien. Maar ik had dan ook een nieuwe taal moeten leren naast React. Voor deze omvang was gewoon JavaScript de juiste keuze. Bij een groter project zou ik TypeScript wel overwegen.
+- **React Router (2.2).** Elk scherm uit het ontwerp een eigen route geven maakte het overzichtelijk, en de terugknop van de browser werkt gewoon. Het alternatief, schermen wisselen met state, had sneller gekund, maar dan kun je geen directe link naar een voertuig of onderhoudsformulier delen.
+- **React Context voor de sessie (2.3).** Redux had ook gekund, maar voor alleen een token en een gebruiker is dat veel extra code. Context was hier genoeg. Een nadeel is dat elke component die de context gebruikt opnieuw rendert als de sessie verandert. Bij deze app merk je daar niets van, maar bij meer gedeelde state zou ik het opsplitsen. De keuze voor `sessionStorage` betekent wel dat je na het sluiten van het tabblad opnieuw moet inloggen. Dat vind ik veiliger, maar het is minder gebruiksvriendelijk.
+- **Eigen CSS met Flexbox (2.4).** Met een UI-bibliotheek zoals Bootstrap of MUI was ik sneller klaar geweest met de opmaak. Maar ik had dan minder geleerd over responsive werken, en het ontwerp uit Figma was lastiger precies na te maken. CSS Grid had bij de voertuigkaarten misschien nog iets netter gewerkt dan `flex-wrap`.
+- **Herbruikbare componenten (2.5).** Dit heeft zich terugbetaald. Toen ik de focus binnen het bevestigingsvenster wilde houden, hoefde ik dat maar op één plek in `ConfirmDialog` aan te passen. In het begin maakte ik componenten soms te vroeg herbruikbaar met te veel props. Ik heb geleerd om eerst te wachten tot iets op twee plekken nodig is.
+- **Eigen hooks (2.6).** Een bibliotheek zoals React Query regelt laden, cachen en opnieuw proberen voor je. Dat was korter geweest, maar ik wilde zelf begrijpen hoe `useEffect`, `AbortController` en het opruimen van verzoeken werken. Nu ik dat snap, zou ik in een volgend project eerder zo'n bibliotheek gebruiken.
+- **Losse hulpfuncties (2.7).** Omdat validatie en opmaak los van de componenten staan, kon ik ze makkelijk testen met Vitest. Validatie in de componenten zelf had sneller gevoeld, maar dan had ik dezelfde regels op meerdere plekken moeten onderhouden.
+- **Filteren op de eigen gebruiker in de frontend (2.8).** Dit is eigenlijk een noodoplossing, omdat de NOVI-backend dit niet zelf doet. Het werkt, maar het is geen echte beveiliging (zie hoofdstuk 3). Met een eigen backend zou ik dit op de server laten controleren.
+- **Demomodus en fictieve kentekens (2.9).** De demomodus was eerst niet gepland, maar bleek heel handig toen NOVI een keer niet bereikbaar was. Een nadeel is dat ik voor sommige functies twee varianten moest bouwen (NOVI en demo). Dat maakte de code op die plekken wat langer.
