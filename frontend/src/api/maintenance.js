@@ -1,5 +1,6 @@
 import { ApiError, novi } from './client';
 import { referenceId } from './data';
+import { deleteVehicle } from './vehicles';
 
 const KEY = 'mam-demo-maintenance';
 
@@ -10,7 +11,7 @@ function localRows() {
     if (Array.isArray(data)) return data;
   } catch { /* Kapotte demodata wordt opnieuw opgebouwd. */ }
   return [
-    { id: 1, vehicleId: 1, maintenanceDate: 20260314, description: 'Kleine beurt met olie en filter', mileage: 48210, costEuro: 189.5, garageName: 'Voorbeeldgarage', notes: 'Fictieve onderhoudsbeurt' },
+    { id: 1, vehicleId: 1, maintenanceDate: '2026-03-14', description: 'Kleine beurt met olie en filter', mileage: 48210, costEuro: 189.5, garageName: 'Voorbeeldgarage', notes: 'Fictieve onderhoudsbeurt' },
   ];
 }
 
@@ -45,10 +46,11 @@ export async function addMaintenance(session, vehicleId, data) {
 }
 
 // Bij bewerken blijft de voertuigkoppeling vast (F29).
+// NOVI vervangt bij PUT het hele record en eist het id in de body (live getest).
 export async function updateMaintenance(session, record, data) {
-  const body = { ...data, vehicleId: record.vehicleId };
+  const body = { id: record.id, ...data, vehicleId: record.vehicleId };
   if (session.mode !== 'novi') {
-    const records = localRows().map(item => (item.id === record.id ? { id: record.id, ...body } : item));
+    const records = localRows().map(item => (item.id === record.id ? body : item));
     saveLocal(records);
     return;
   }
@@ -61,4 +63,25 @@ export async function deleteMaintenance(session, record) {
     return;
   }
   await novi.request(`/maintenance/${record.id}`, { token: session.token, method: 'DELETE' });
+}
+
+// Verwijdert eerst al het onderhoud en daarna pas het voertuig.
+// Lukt een stap niet, dan stoppen we en melden we wat al wel verwijderd is.
+export async function deleteVehicleWithMaintenance(session, vehicle, records) {
+  let removed = 0;
+  for (const record of records) {
+    try {
+      await deleteMaintenance(session, record);
+      removed += 1;
+    } catch (error) {
+      error.message = `Verwijderen is gestopt. ${removed} van de ${records.length} onderhoudsrecords zijn verwijderd; het voertuig staat er nog. ${error.message}`;
+      throw error;
+    }
+  }
+  try {
+    await deleteVehicle(session, vehicle.id);
+  } catch (error) {
+    error.message = `Het onderhoud is verwijderd, maar het voertuig zelf niet. ${error.message}`;
+    throw error;
+  }
 }
