@@ -1,2 +1,3 @@
-# mijnautomanager-2.0
-new repo after some issues I couldn't fix
+# MijnAutoManager
+
+Eindopdracht Frontend (NOVI). De app staat in de map `frontend`. Zie [frontend/README.md](frontend/README.md) voor installatie en uitleg.
