@@ -36,3 +36,11 @@
 .top-defects {
   padding-left: 1.25rem;
 }
+
+.apk-layout > .apk-info {
+  margin: 0;
+}
+
+.defects-card h3 {
+  margin-top: 24px;
+}
