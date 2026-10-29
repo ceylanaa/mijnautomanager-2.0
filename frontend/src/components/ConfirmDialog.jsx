@@ -12,8 +12,17 @@ export default function ConfirmDialog({ title, children, confirmLabel, busyLabel
     cancelRef.current?.focus();
   }, []);
 
+  // Escape annuleert; Tab blijft binnen het venster zodat de pagina erachter niet bereikbaar is.
   function handleKeyDown(event) {
     if (event.key === 'Escape' && !busy) onCancel();
+    if (event.key === 'Tab') {
+      const buttons = [...event.currentTarget.querySelectorAll('button:not([disabled])')];
+      if (buttons.length === 0) return;
+      const first = buttons[0];
+      const last = buttons[buttons.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    }
   }
 
   return (
