@@ -5,6 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AuthPage from './pages/AuthPage';
 import VehicleList from './pages/VehicleList';
 import VehicleDetail from './pages/VehicleDetail';
+import MaintenanceForm from './pages/MaintenanceForm';
 import SearchVehicle from './pages/SearchVehicle';
 import NotFound from './pages/NotFound';
 
@@ -25,6 +26,8 @@ export default function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="voertuigen" element={<VehicleList />} />
           <Route path="voertuigen/:id" element={<VehicleDetail />} />
+          <Route path="voertuigen/:id/onderhoud/nieuw" element={<MaintenanceForm />} />
+          <Route path="voertuigen/:id/onderhoud/:maintenanceId/bewerken" element={<MaintenanceForm />} />
           <Route path="kenteken" element={<SearchVehicle />} />
         </Route>
         <Route path="*" element={<NotFound />} />
