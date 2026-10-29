@@ -3,7 +3,7 @@ import { demoVehicle, normalizePlate, ownVehicles, referenceId, uniqueUser, vali
 export class ApiError extends Error {
   constructor(message, status) { super(message); this.name = 'ApiError'; this.status = status; }
 }
-async function jsonRequest(url, options = {}) {
+export async function jsonRequest(url, options = {}) {
   const timeout = AbortSignal.timeout(15000);
   const signal = options.signal ? AbortSignal.any([options.signal, timeout]) : timeout;
   let response;
