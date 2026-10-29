@@ -1,7 +1,7 @@
 import { Link, useParams } from 'react-router';
 import useVehicles from '../hooks/useVehicles';
 import { demoVehicle } from '../api/data';
-import { formatRdwDate } from '../helpers/format';
+import ApkStatus from '../components/ApkStatus';
 import Notice from '../components/Notice';
 import PageHeading from '../components/PageHeading';
 import './VehicleDetail.css';
@@ -37,8 +37,8 @@ export default function VehicleDetail() {
             <dl className="data-list">
               <div><dt>Bouwjaar</dt><dd>{details?.year || 'Niet beschikbaar'}</dd></div>
               <div><dt>Brandstof</dt><dd>{details?.fuel || 'Niet beschikbaar'}</dd></div>
-              <div><dt>APK-datum</dt><dd>{formatRdwDate(details?.apk)}</dd></div>
             </dl>
+            <ApkStatus expiry={details?.apk} />
             <p className="muted">Geen beschikbare APK-datum is geen keuringsgarantie.</p>
           </section>
         </>

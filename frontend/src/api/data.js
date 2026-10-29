@@ -1,3 +1,4 @@
+import { addDays, todayKey } from '../helpers/apkStatus';
 export const normalizePlate = value => String(value ?? '').toUpperCase().replace(/[\s-]/g, '');
 export function validPlate(value) { return /^[A-Z0-9]{1,20}$/.test(normalizePlate(value)); }
 export function referenceId(value) {
@@ -18,9 +19,11 @@ export function uniqueUser(users, email) {
   }
   return { id: referenceId(matches[0].id), email: matches[0].email };
 }
+// Fictieve demovoertuigen. De APK-datums zijn verzonnen en worden ten opzichte van vandaag berekend,
+// zodat de demo altijd een naderende en een ontbrekende datum laat zien.
 export const demoVehicles = [
-  { licensePlate: 'TESTA1', brand: 'Voorbeeldmerk', model: 'Stadsauto', year: 'Voorbeeldbouwjaar', fuel: 'Benzine', apk: null, source: 'demo' },
+  { licensePlate: 'TESTA1', brand: 'Voorbeeldmerk', model: 'Stadsauto', year: 'Voorbeeldbouwjaar', fuel: 'Benzine', apk: addDays(todayKey(), 20), source: 'demo' },
   { licensePlate: 'TESTA2', brand: 'Voorbeeldmerk', model: 'Weekendauto', year: 'Voorbeeldbouwjaar', fuel: 'Elektrisch', apk: null, source: 'demo' },
-  { licensePlate: 'TESTB1', brand: 'Voorbeeldmerk', model: 'Familieauto', year: 'Voorbeeldbouwjaar', fuel: 'Benzine', apk: null, source: 'demo' },
+  { licensePlate: 'TESTB1', brand: 'Voorbeeldmerk', model: 'Familieauto', year: 'Voorbeeldbouwjaar', fuel: 'Benzine', apk: addDays(todayKey(), 200), source: 'demo' },
 ];
 export function demoVehicle(plate) { return demoVehicles.find(v => v.licensePlate === normalizePlate(plate)); }
