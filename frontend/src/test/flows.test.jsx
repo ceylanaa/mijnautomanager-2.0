@@ -26,6 +26,11 @@ describe('eerste bouwstap', () => {
       expect(await attempt).toBe(false);
     } finally { loginMock.mockRestore(); }
   });
+  it('toont een 404-pagina bij een onbekend adres', () => {
+    open('/bestaat-niet');
+    expect(screen.getByRole('heading', { name: 'Deze pagina bestaat niet.' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Naar Inloggen' })).toBeInTheDocument();
+  });
   it('stuurt een directe privélink naar inloggen zonder verzoek', () => {
     const fetch = vi.fn(); vi.stubGlobal('fetch', fetch); open('/voertuigen/2');
     expect(screen.getByRole('heading', { name: 'Fijn dat je er bent.' })).toBeInTheDocument(); expect(fetch).not.toHaveBeenCalled();

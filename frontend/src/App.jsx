@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
-import { Link, Navigate, Route, Routes, useLocation } from 'react-router';
+import { Navigate, Route, Routes, useLocation } from 'react-router';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import AuthPage from './pages/AuthPage';
 import VehicleList from './pages/VehicleList';
 import VehicleDetail from './pages/VehicleDetail';
 import SearchVehicle from './pages/SearchVehicle';
+import NotFound from './pages/NotFound';
 
 export default function App() {
   const { pathname } = useLocation();
@@ -26,10 +27,7 @@ export default function App() {
           <Route path="voertuigen/:id" element={<VehicleDetail />} />
           <Route path="kenteken" element={<SearchVehicle />} />
         </Route>
-        <Route
-          path="*"
-          element={<section className="card"><h1>Deze pagina bestaat niet.</h1><Link to="/voertuigen">Terug naar overzicht</Link></section>}
-        />
+        <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
   );
