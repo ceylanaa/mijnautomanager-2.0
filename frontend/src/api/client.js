@@ -1,4 +1,4 @@
-import { uniqueUser } from './data';
+import { demoVehicle, normalizePlate, ownVehicles, referenceId, uniqueUser } from './data';
 
 export class ApiError extends Error {
   constructor(message, status) { super(message); this.name = 'ApiError'; this.status = status; }
@@ -32,6 +32,20 @@ export function createNoviApi({ baseUrl, projectId }) {
       ...(body ? { body: JSON.stringify(body) } : {}),
     });
   }
+  async function vehicles(session, signal) {
+    const all = [], seen = new Set();
+    // Bounded paging: never return an incomplete list as if it were complete.
+    for (let offset = 0; offset < 10000; offset += 100) {
+      const page = rows(await request(`/vehicles?limit=100&offset=${offset}&sort=id`, { token: session.token, signal }));
+      for (const row of page) {
+        const id = referenceId(row.id);
+        if (id === null || seen.has(id)) throw new ApiError('De voertuiglijst kon niet volledig worden opgehaald. Controleer de paginering.');
+        seen.add(id); all.push(row);
+      }
+      if (page.length < 100) return ownVehicles(all, session.user.id);
+    }
+    throw new ApiError('De voertuiglijst is te groot om volledig te verwerken.');
+  }
   return {
     async register(email, password) {
       return request('/users', { method: 'POST', body: { email: email.trim(), password, roles: ['user'] } });
@@ -52,6 +66,20 @@ export function createNoviApi({ baseUrl, projectId }) {
       }
       const user = uniqueUser(users, result.user.email);
       return { mode: 'novi', token: result.token, user };
+    },
+    vehicles,
+    async addVehicle(session, plate, nickname) {
+      const licensePlate = normalizePlate(plate);
+      if (!demoVehicle(licensePlate)) throw new ApiError('Alleen fictieve demovoertuigen kunnen worden opgeslagen.');
+      if (nickname.trim().length > 100) throw new ApiError('De bijnaam mag maximaal 100 tekens bevatten.');
+      const current = await vehicles(session);
+      if (current.some(v => normalizePlate(v.licensePlate) === licensePlate)) throw new ApiError('Dit voertuig staat al in je overzicht.');
+      try {
+        await request('/vehicles', { token: session.token, method: 'POST', body: { userId: session.user.id, licensePlate, nickname: nickname.trim() } });
+      } catch (error) {
+        if (error.status) throw error;
+        throw new ApiError('De opslaguitkomst is onzeker. Open eerst Mijn auto\'s om te controleren of het voertuig al is toegevoegd, voordat je opnieuw opslaat.');
+      }
     },
   };
 }
