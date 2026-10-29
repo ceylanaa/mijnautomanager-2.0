@@ -55,7 +55,20 @@ export function createNoviApi({ baseUrl, projectId }) {
     }
     throw new ApiError('De voertuiglijst is te groot om volledig te verwerken.');
   }
+  // Controleert vóór een wijziging of het record echt in het eigen gefilterde overzicht staat.
+  async function ownVehicle(session, vehicleId) {
+    const vehicle = (await vehicles(session)).find(v => referenceId(v.id) === referenceId(vehicleId));
+    if (!vehicle) throw new ApiError('Dit voertuig staat niet in jouw overzicht.');
+    return vehicle;
+  }
   return {
+    request,
+    ownVehicle,
+    async updateNickname(session, vehicleId, nickname) {
+      if (nickname.trim().length > 100) throw new ApiError('De bijnaam mag maximaal 100 tekens bevatten.');
+      await ownVehicle(session, vehicleId);
+      return request(`/vehicles/${vehicleId}`, { token: session.token, method: 'PATCH', body: { nickname: nickname.trim() } });
+    },
     async register(email, password) {
       return request('/users', { method: 'POST', body: { email: email.trim(), password, roles: ['user'] } });
     },

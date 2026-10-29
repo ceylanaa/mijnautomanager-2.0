@@ -223,3 +223,9 @@ small {
     padding: 24px;
   }
 }
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}

@@ -5,3 +5,8 @@
 .detail-card h2 {
   margin-top: 24px;
 }
+
+.edit-card {
+  max-width: 700px;
+  margin-bottom: 24px;
+}

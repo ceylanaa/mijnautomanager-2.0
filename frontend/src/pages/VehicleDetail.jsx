@@ -1,7 +1,12 @@
+import { useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router';
+import { useAuth } from '../auth/AuthContext';
+import { updateNickname } from '../api/vehicles';
 import useVehicles from '../hooks/useVehicles';
 import { demoVehicle } from '../api/data';
 import ApkStatus from '../components/ApkStatus';
+import Button from '../components/Button';
+import NicknameForm from '../components/NicknameForm';
 import Notice from '../components/Notice';
 import PageHeading from '../components/PageHeading';
 import './VehicleDetail.css';
@@ -10,14 +15,28 @@ import './VehicleDetail.css';
 export default function VehicleDetail() {
   const { id } = useParams();
   const location = useLocation();
+  const { session, handleError } = useAuth();
   const { records, loading, error, reload } = useVehicles();
+  const [editing, setEditing] = useState(false);
+  const [message, setMessage] = useState(location.state?.message ?? '');
   const vehicle = records.find(record => String(record.id) === id);
   const details = vehicle && demoVehicle(vehicle.licensePlate);
+
+  async function saveNickname(nickname) {
+    try {
+      await updateNickname(session, vehicle.id, nickname);
+    } catch (saveError) {
+      throw new Error(handleError(saveError));
+    }
+    setEditing(false);
+    setMessage('De bijnaam is opgeslagen.');
+    reload();
+  }
 
   return (
     <>
       <Link className="back-link" to="/voertuigen">← Mijn auto's</Link>
-      <Notice>{location.state?.message}</Notice>
+      <Notice>{message}</Notice>
       {loading && <Notice>Voertuig ophalen...</Notice>}
       {!loading && error && <Notice error onRetry={reload}>{error}</Notice>}
       {!loading && !error && !vehicle && (
@@ -32,7 +51,14 @@ export default function VehicleDetail() {
             eyebrow="VOERTUIGDETAILS"
             title={vehicle.nickname || vehicle.licensePlate}
             description="Fictieve voertuiggegevens voor deze demo."
-          />
+          >
+            {!editing && <Button variant="secondary" onClick={() => setEditing(true)}>Bijnaam wijzigen</Button>}
+          </PageHeading>
+          {editing && (
+            <section className="card edit-card">
+              <NicknameForm initialValue={vehicle.nickname} onSave={saveNickname} onCancel={() => setEditing(false)} />
+            </section>
+          )}
           <section className="card detail-card">
             <span className="plate">{vehicle.licensePlate}</span>
             <h2>{details ? `${details.brand} ${details.model}` : 'Opgeslagen voertuig'}</h2>

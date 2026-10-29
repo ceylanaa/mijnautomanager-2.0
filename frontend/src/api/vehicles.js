@@ -1,6 +1,7 @@
 import { duplicateError, novi } from './client';
 import { demoVehicle, normalizePlate, ownVehicles } from './data';
 const KEY = 'mam-demo-vehicles';
+// In de lokale demo staan voertuigen alleen in sessionStorage van dit tabblad.
 function localRows() {
   try { const data = JSON.parse(sessionStorage.getItem(KEY)); if (Array.isArray(data)) return data; } catch { /* Reset corrupt local demo data. */ }
   return [
@@ -23,4 +24,14 @@ export async function saveVehicle(session, plate, nickname) {
   records.push(created);
   sessionStorage.setItem(KEY, JSON.stringify(records));
   return created;
+}
+export async function updateNickname(session, vehicleId, nickname) {
+  if (session.mode === 'novi') return novi.updateNickname(session, vehicleId, nickname);
+  if (nickname.trim().length > 100) throw new Error('De bijnaam mag maximaal 100 tekens bevatten.');
+  const records = localRows();
+  const vehicle = ownVehicles(records, session.user.id).find(v => v.id === vehicleId);
+  if (!vehicle) throw new Error('Dit voertuig staat niet in jouw overzicht.');
+  vehicle.nickname = nickname.trim();
+  sessionStorage.setItem(KEY, JSON.stringify(records));
+  return vehicle;
 }

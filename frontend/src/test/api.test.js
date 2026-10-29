@@ -60,6 +60,15 @@ describe('gebruikersfilters en contracten', () => {
     await expect(api.addVehicle(session, 'TESTA2', '')).rejects.toThrow('onzeker');
     expect(fetch).toHaveBeenCalledTimes(2);
   });
+  it('wijzigt de bijnaam alleen van een eigen voertuig', async () => {
+    const fetch = mockFetch(ok([{ id: 3, userId: 7, licensePlate: 'TESTA1' }, { id: 4, userId: 8, licensePlate: 'TESTB1' }]), ok({ id: 3 }));
+    await api.updateNickname(session, 3, ' Nieuwe naam ');
+    expect(fetch.mock.calls[1][0]).toBe('https://novi.test/api/vehicles/3');
+    expect(fetch.mock.calls[1][1].method).toBe('PATCH');
+    expect(JSON.parse(fetch.mock.calls[1][1].body)).toEqual({ nickname: 'Nieuwe naam' });
+    mockFetch(ok([{ id: 4, userId: 8, licensePlate: 'TESTB1' }]));
+    await expect(api.updateNickname(session, 4, 'x')).rejects.toThrow('niet in jouw overzicht');
+  });
   it('registreert uitsluitend de gewone user-rol', async () => {
     const fetch = mockFetch(ok({ id: 4 })); await api.register('new@example.com', 'fictief-testinvoer');
     expect(JSON.parse(fetch.mock.calls[0][1].body).roles).toEqual(['user']);
