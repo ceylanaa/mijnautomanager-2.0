@@ -18,7 +18,7 @@ export default function AuthPage({ register = false }) {
     setBusy(true);
     try {
       if (register) { await novi.register(email, password); setSuccess(true); setPassword(''); setRepeat(''); }
-      else { await login(email, password); navigate(location.state?.from?.startsWith('/voertuigen') ? location.state.from : '/voertuigen', { replace: true }); }
+      else if (await login(email, password)) { navigate(location.state?.from?.startsWith('/voertuigen') ? location.state.from : '/voertuigen', { replace: true }); }
     } catch (error) { setError(error.status === 400 && register ? 'Registratie is niet gelukt. Controleer je invoer, of log in als je al een account hebt.' : error.message); }
     finally { setBusy(false); }
   }

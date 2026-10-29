@@ -1,11 +1,31 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, renderHook, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it, vi } from 'vitest';
 import App from '../App';
-import { AuthProvider } from '../auth/AuthContext';
+import { AuthProvider, useAuth } from '../auth/AuthContext';
+import { novi } from '../api/client';
 function open(path = '/inloggen') { render(<MemoryRouter initialEntries={[path]}><AuthProvider><App/></AuthProvider></MemoryRouter>); return userEvent.setup(); }
 describe('eerste bouwstap', () => {
+  it('negeert een oud loginantwoord na wisselen naar de demo en uitloggen', async () => {
+    let finishLogin;
+    const pending = new Promise(resolve => { finishLogin = resolve; });
+    const loginMock = vi.spyOn(novi, 'login').mockReturnValueOnce(pending);
+    try {
+      const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider });
+      let attempt;
+      act(() => { attempt = result.current.login('a@example.com', 'fictief-testinvoer'); });
+      act(() => result.current.startDemo());
+      act(() => result.current.logout());
+      await act(async () => {
+        finishLogin({ mode: 'novi', token: 'mock-token', user: { id: 7 } });
+        await attempt;
+      });
+      expect(result.current.session).toBeNull();
+      expect(sessionStorage.getItem('mam-session')).toBeNull();
+      expect(await attempt).toBe(false);
+    } finally { loginMock.mockRestore(); }
+  });
   it('stuurt een directe privélink naar inloggen zonder verzoek', () => {
     const fetch = vi.fn(); vi.stubGlobal('fetch', fetch); open('/voertuigen');
     expect(screen.getByRole('heading', { name: 'Fijn dat je er bent.' })).toBeInTheDocument(); expect(fetch).not.toHaveBeenCalled();
