@@ -74,6 +74,10 @@ export function createNoviApi({ baseUrl, projectId }) {
       await ownVehicle(session, vehicleId);
       return request(`/vehicles/${vehicleId}`, { token: session.token, method: 'PATCH', body: { nickname: nickname.trim() } });
     },
+    async deleteVehicle(session, vehicleId) {
+      await ownVehicle(session, vehicleId);
+      return request(`/vehicles/${vehicleId}`, { token: session.token, method: 'DELETE' });
+    },
     async register(email, password) {
       return request('/users', { method: 'POST', body: { email: email.trim(), password, roles: ['user'] } });
     },

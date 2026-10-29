@@ -35,3 +35,9 @@ export async function updateNickname(session, vehicleId, nickname) {
   sessionStorage.setItem(KEY, JSON.stringify(records));
   return vehicle;
 }
+export async function deleteVehicle(session, vehicleId) {
+  if (session.mode === 'novi') return novi.deleteVehicle(session, vehicleId);
+  const records = localRows();
+  if (!ownVehicles(records, session.user.id).some(v => v.id === vehicleId)) throw new Error('Dit voertuig staat niet in jouw overzicht.');
+  sessionStorage.setItem(KEY, JSON.stringify(records.filter(v => v.id !== vehicleId)));
+}
