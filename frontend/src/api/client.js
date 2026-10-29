@@ -1,4 +1,4 @@
-import { demoVehicle, normalizePlate, ownVehicles, referenceId, uniqueUser } from './data';
+import { demoVehicle, normalizePlate, ownVehicles, referenceId, uniqueUser, validPlate } from './data';
 
 export class ApiError extends Error {
   constructor(message, status) { super(message); this.name = 'ApiError'; this.status = status; }
@@ -82,6 +82,19 @@ export function createNoviApi({ baseUrl, projectId }) {
       }
     },
   };
+}
+export async function searchRdw(plate, signal) {
+  const key = normalizePlate(plate);
+  if (!validPlate(key)) throw new ApiError('Vul een kenteken met alleen letters en cijfers in.');
+  const params = new URLSearchParams({ kenteken: key, $limit: '2' });
+  const result = await jsonRequest(`https://opendata.rdw.nl/resource/m9d7-ebf2.json?${params}`, { signal });
+  if (!Array.isArray(result)) throw new ApiError('De RDW gaf een onbekend antwoord.');
+  if (!result.length) return null;
+  if (result.length !== 1 || result[0].kenteken !== key) throw new ApiError('De RDW-resultaten konden niet eenduidig worden gekoppeld.');
+  const record = result[0];
+  const fuelRows = await jsonRequest(`https://opendata.rdw.nl/resource/8ys7-d773.json?${new URLSearchParams({ kenteken: key, $limit: '20' })}`, { signal });
+  if (!Array.isArray(fuelRows) || fuelRows.some(row => row.kenteken !== key)) throw new ApiError('De brandstofgegevens konden niet worden gekoppeld. Probeer het opnieuw.');
+  return { licensePlate: key, brand: record.merk || 'Niet beschikbaar', model: record.handelsbenaming || 'Niet beschikbaar', year: record.datum_eerste_toelating?.slice(0, 4) || 'Niet beschikbaar', fuel: [...new Set(fuelRows.map(row => row.brandstof_omschrijving).filter(Boolean))].join(' / ') || 'Niet beschikbaar', apk: record.vervaldatum_apk, source: 'rdw' };
 }
 export const novi = createNoviApi({
   baseUrl: import.meta.env.VITE_NOVI_URL || 'https://novi-backend-api-wgsgz.ondigitalocean.app',
