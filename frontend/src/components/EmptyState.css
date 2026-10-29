@@ -1,0 +1,15 @@
+.empty {
+  padding: 50px;
+  text-align: center;
+}
+
+.empty p {
+  color: var(--color-muted);
+}
+
+.empty-symbol {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--color-primary);
+  font-size: 40px;
+}

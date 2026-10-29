@@ -24,10 +24,3 @@ export const demoVehicles = [
   { licensePlate: 'TESTB1', brand: 'Voorbeeldmerk', model: 'Familieauto', year: 'Voorbeeldbouwjaar', fuel: 'Benzine', apk: null, source: 'demo' },
 ];
 export function demoVehicle(plate) { return demoVehicles.find(v => v.licensePlate === normalizePlate(plate)); }
-export function formatRdwDate(value) {
-  if (!/^\d{8}$/.test(value ?? '')) return 'Niet beschikbaar';
-  const y = Number(value.slice(0, 4)), m = Number(value.slice(4, 6)), d = Number(value.slice(6, 8));
-  const date = new Date(Date.UTC(y, m - 1, d));
-  return date.getUTCFullYear() === y && date.getUTCMonth() === m - 1 && date.getUTCDate() === d
-    ? new Intl.DateTimeFormat('nl-NL', { timeZone: 'UTC' }).format(date) : 'Niet beschikbaar';
-}
