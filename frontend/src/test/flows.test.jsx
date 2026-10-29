@@ -40,9 +40,10 @@ describe('eerste bouwstap', () => {
     await user.click(screen.getByRole('button', { name: /Zoeken/ }));
     await user.type(screen.getByLabelText('Bijnaam (optioneel)'), 'Mijn weekendauto');
     await user.click(screen.getByRole('button', { name: 'Auto toevoegen' }));
-    expect(await screen.findByRole('heading', { name: 'Mijn weekendauto' })).toBeInTheDocument();
-    await user.click(screen.getAllByRole('link', { name: /Details/ })[1]);
     expect(await screen.findByRole('heading', { level: 1, name: 'Mijn weekendauto' })).toBeInTheDocument();
+    expect(screen.getByText('Het voertuig is toegevoegd aan je overzicht.')).toBeInTheDocument();
+    await user.click(screen.getByRole('link', { name: "← Mijn auto's" }));
+    expect(await screen.findByRole('heading', { name: 'Mijn weekendauto' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Uitloggen' }));
     expect(await screen.findByRole('heading', { name: 'Fijn dat je er bent.' })).toBeInTheDocument();
     expect(sessionStorage.getItem('mam-session')).toBeNull(); expect(fetch).not.toHaveBeenCalled();

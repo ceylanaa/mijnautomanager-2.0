@@ -19,6 +19,12 @@ async function jsonRequest(url, options = {}) {
   if (response.status === 204) return null;
   try { return await response.json(); } catch { throw new ApiError('De server gaf een onverwacht antwoord.'); }
 }
+// Foutmelding bij een dubbel kenteken; existingId maakt een link naar het bestaande voertuig mogelijk.
+export function duplicateError(existingId) {
+  const error = new ApiError('Dit voertuig staat al in je overzicht.');
+  error.existingId = existingId;
+  return error;
+}
 function rows(value) {
   if (Array.isArray(value)) return value;
   if (Array.isArray(value?.data)) return value.data;
@@ -76,13 +82,18 @@ export function createNoviApi({ baseUrl, projectId }) {
       if (!demoVehicle(licensePlate)) throw new ApiError('Alleen fictieve demovoertuigen kunnen worden opgeslagen.');
       if (nickname.trim().length > 100) throw new ApiError('De bijnaam mag maximaal 100 tekens bevatten.');
       const current = await vehicles(session);
-      if (current.some(v => normalizePlate(v.licensePlate) === licensePlate)) throw new ApiError('Dit voertuig staat al in je overzicht.');
+      const existing = current.find(v => normalizePlate(v.licensePlate) === licensePlate);
+      if (existing) throw duplicateError(existing.id);
+      let created;
       try {
-        await request('/vehicles', { token: session.token, method: 'POST', body: { userId: session.user.id, licensePlate, nickname: nickname.trim() } });
+        created = await request('/vehicles', { token: session.token, method: 'POST', body: { userId: session.user.id, licensePlate, nickname: nickname.trim() } });
       } catch (error) {
         if (error.status) throw error;
         throw new ApiError('De opslaguitkomst is onzeker. Open eerst Mijn auto\'s om te controleren of het voertuig al is toegevoegd, voordat je opnieuw opslaat.');
       }
+      if (referenceId(created?.id) !== null) return created;
+      // Geeft NOVI geen id terug, dan zoeken we het nieuwe voertuig op in het eigen overzicht.
+      return (await vehicles(session)).find(v => normalizePlate(v.licensePlate) === licensePlate) ?? null;
     },
   };
 }

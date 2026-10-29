@@ -23,6 +23,7 @@ export default function SearchVehicle() {
   const [nickname, setNickname] = useState('');
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
+  const [existingId, setExistingId] = useState(null);
   const [notFound, setNotFound] = useState(false);
   const [searching, setSearching] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -36,6 +37,7 @@ export default function SearchVehicle() {
     request.current?.abort();
     setResult(null);
     setError('');
+    setExistingId(null);
     setNotFound(false);
     setSearching(false);
   }
@@ -82,11 +84,17 @@ export default function SearchVehicle() {
     if (saving || result?.source !== 'demo') return;
     setSaving(true);
     setError('');
+    setExistingId(null);
     try {
-      await saveVehicle(session, result.licensePlate, nickname);
-      navigate('/voertuigen', { replace: true });
+      const created = await saveVehicle(session, result.licensePlate, nickname);
+      if (created?.id !== undefined) {
+        navigate(`/voertuigen/${created.id}`, { replace: true, state: { message: 'Het voertuig is toegevoegd aan je overzicht.' } });
+      } else {
+        navigate('/voertuigen', { replace: true });
+      }
     } catch (saveError) {
       setError(handleError(saveError));
+      setExistingId(saveError.existingId ?? null);
     } finally {
       setSaving(false);
     }
@@ -190,7 +198,10 @@ export default function SearchVehicle() {
           )}
         </section>
       </div>
-      <Notice error>{error}</Notice>
+      <Notice error>
+        {error}
+        {existingId !== null && <> <Link to={`/voertuigen/${existingId}`}>Bekijk dit voertuig</Link></>}
+      </Notice>
     </>
   );
 }

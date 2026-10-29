@@ -1,4 +1,4 @@
-import { novi } from './client';
+import { duplicateError, novi } from './client';
 import { demoVehicle, normalizePlate, ownVehicles } from './data';
 const KEY = 'mam-demo-vehicles';
 function localRows() {
@@ -17,7 +17,10 @@ export async function saveVehicle(session, plate, nickname) {
   const licensePlate = normalizePlate(plate);
   if (!demoVehicle(licensePlate)) throw new Error('Kies een fictief demovoertuig.');
   const records = localRows();
-  if (ownVehicles(records, session.user.id).some(v => normalizePlate(v.licensePlate) === licensePlate)) throw new Error('Dit voertuig staat al in je overzicht.');
-  records.push({ id: Math.max(0, ...records.map(v => v.id)) + 1, userId: session.user.id, licensePlate, nickname: nickname.trim() });
+  const existing = ownVehicles(records, session.user.id).find(v => normalizePlate(v.licensePlate) === licensePlate);
+  if (existing) throw duplicateError(existing.id);
+  const created = { id: Math.max(0, ...records.map(v => v.id)) + 1, userId: session.user.id, licensePlate, nickname: nickname.trim() };
+  records.push(created);
   sessionStorage.setItem(KEY, JSON.stringify(records));
+  return created;
 }

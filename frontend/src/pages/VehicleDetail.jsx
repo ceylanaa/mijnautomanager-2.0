@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router';
+import { Link, useLocation, useParams } from 'react-router';
 import useVehicles from '../hooks/useVehicles';
 import { demoVehicle } from '../api/data';
 import ApkStatus from '../components/ApkStatus';
@@ -9,6 +9,7 @@ import './VehicleDetail.css';
 // S05 Voertuig en onderhoud. De dynamische route /voertuigen/:id gebruikt dezelfde gefilterde lijst.
 export default function VehicleDetail() {
   const { id } = useParams();
+  const location = useLocation();
   const { records, loading, error, reload } = useVehicles();
   const vehicle = records.find(record => String(record.id) === id);
   const details = vehicle && demoVehicle(vehicle.licensePlate);
@@ -16,6 +17,7 @@ export default function VehicleDetail() {
   return (
     <>
       <Link className="back-link" to="/voertuigen">← Mijn auto's</Link>
+      <Notice>{location.state?.message}</Notice>
       {loading && <Notice>Voertuig ophalen...</Notice>}
       {!loading && error && <Notice error onRetry={reload}>{error}</Notice>}
       {!loading && !error && !vehicle && (
