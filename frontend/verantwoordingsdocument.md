@@ -134,7 +134,6 @@ Ook ben ik blij met de eigen hooks. In het begin stond in bijna elke pagina deze
 ### 8.2 Wat was lastig en hoe heb ik het opgelost
 
 - **De NOVI-datumnotatie.** In de Swagger staat `maintenanceDate` als `number`, dus ik stuurde eerst een tijdstempel mee. Ik kreeg steeds een 406 terug en begreep niet waarom. Pas toen ik met losse verzoeken ging testen, zag ik dat NOVI alleen een datum als tekst (`"2026-10-01"`) accepteert. Bij bewerken bleek `PUT` ook nog het `id` in de body te willen. Ik heb hiervan geleerd om documentatie niet blind te vertrouwen en zelf kleine tests te doen.
-- **Alleen mijn eigen voertuigen tonen.** Ik ging ervan uit dat `GET /api/vehicles` alleen mijn voertuigen teruggaf, maar ik zag ineens auto's van andere studenten. Daarom zoek ik na het inloggen mijn eigen gebruikers-id op en filter ik daarop. Ik toon liever een foutmelding dan een lijst die misschien niet klopt.
 - **De RDW-datasets.** Een paar dataset-ID's uit mijn ideefase bleken niet te kloppen of bestonden niet meer. Van `8ys7-d773` dacht ik dat de codetabel van gebreken was, maar het is de brandstoftabel. Ook kreeg ik bij sommige kentekens maar een deel van de gebreken terug, omdat de RDW per pagina een maximum teruggeeft. Ik heb de paginering toegevoegd en daarna de telling vergeleken met wat de RDW zelf aangeeft.
 - **CORS.** Een tijd lang werkte inloggen bij mij niet, terwijl de code goed leek. Uiteindelijk bleek dat ik de app via `127.0.0.1` opende in plaats van `localhost`. NOVI staat alleen `http://localhost:5173` toe. Nu start `npm run dev` altijd op `localhost` met een vaste poort, en geeft de inlogpagina een melding.
 - **Oude antwoorden die te laat binnenkomen.** Als ik snel uitlogde of naar de demo wisselde terwijl een login nog liep, kwam het oude antwoord soms later binnen en was ik toch weer ingelogd. Dat heb ik opgelost met een teller (`loginVersion`) in de `AuthContext`: bij uitloggen of de demo starten gaat die omhoog, en een loginantwoord met een oude waarde wordt genegeerd. Hier heb ik veel geleerd over asynchroon werken.
@@ -156,7 +155,7 @@ Wat ik hiervan heb geleerd:
 - **Merge pull requests eerder** in plaats van ze lang op elkaar te stapelen. Hoe hoger de stapel, hoe meer er misgaat als je onderaan iets verandert.
 - **Gebruik nooit `git push --force` op een gedeelde branch.** Als het echt moet op mijn eigen branch, dan met `--force-with-lease`, zodat ik niet per ongeluk werk overschrijf.
 
-Mijn conclusie is dat Git net zo belangrijk is als de code zelf. Een rebase is een handig hulpmiddel, maar alleen voor lokale commits die nog niemand anders heeft. Volgende keer denk ik eerst na over wat een commando met de rest van mijn branches doet, voordat ik het uitvoer.
+Mijn conclusie is dat ik veel voorzichtiger moet zijn met een rebase. Het is handig om commits op te schonen die alleen nog op mijn eigen computer staan, maar niet voor commits die al op GitHub staan en waar andere branches op voortbouwen. Volgende keer kijk ik eerst welke branches van een branch afhangen en maak ik een back-up, voordat ik iets aan de geschiedenis verander.
 
 ### 8.4 Reflectie op de gemaakte keuzes
 
