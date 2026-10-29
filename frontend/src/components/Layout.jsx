@@ -20,6 +20,7 @@ export default function Layout() {
             <nav aria-label="Hoofdnavigatie">
               <NavLink to="/voertuigen">Mijn auto's</NavLink>
               <NavLink to="/kenteken">Kenteken</NavLink>
+              <NavLink to="/garages">Garages</NavLink>
               <Button variant="secondary" onClick={() => logout()}>Uitloggen</Button>
             </nav>
           ) : (

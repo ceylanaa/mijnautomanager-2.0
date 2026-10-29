@@ -6,6 +6,7 @@ import AuthPage from './pages/AuthPage';
 import VehicleList from './pages/VehicleList';
 import VehicleDetail from './pages/VehicleDetail';
 import { OwnVehicleApk, PlateApk } from './pages/ApkPage';
+import GarageSearch from './pages/GarageSearch';
 import MaintenanceForm from './pages/MaintenanceForm';
 import SearchVehicle from './pages/SearchVehicle';
 import NotFound from './pages/NotFound';
@@ -31,6 +32,7 @@ export default function App() {
           <Route path="voertuigen/:id/onderhoud/:maintenanceId/bewerken" element={<MaintenanceForm />} />
           <Route path="voertuigen/:id/apk" element={<OwnVehicleApk />} />
           <Route path="apk/:kenteken" element={<PlateApk />} />
+          <Route path="garages" element={<GarageSearch />} />
           <Route path="kenteken" element={<SearchVehicle />} />
         </Route>
         <Route path="*" element={<NotFound />} />
