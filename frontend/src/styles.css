@@ -235,3 +235,13 @@ small {
   margin: 40px auto;
   text-align: center;
 }
+
+/* Tekst alleen voor schermlezers, bijvoorbeeld om knoppen in een lijst te onderscheiden. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
