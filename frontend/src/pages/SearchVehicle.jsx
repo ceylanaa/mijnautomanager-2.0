@@ -192,7 +192,10 @@ export default function SearchVehicle() {
                   <Button type="submit" busy={saving}>{saving ? 'Opslaan...' : 'Auto toevoegen'}</Button>
                 </form>
               ) : (
-                <p className="muted">Toevoegen is alleen beschikbaar voor de fictieve demovoertuigen.</p>
+                <>
+                  <p className="muted">Toevoegen is alleen beschikbaar voor de fictieve demovoertuigen.</p>
+                  <Link to={`/apk/${normalizePlate(result.licensePlate)}`}>APK en gebreken van dit kenteken bekijken</Link>
+                </>
               )}
             </>
           )}

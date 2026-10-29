@@ -114,6 +114,7 @@ export default function VehicleDetail() {
             </dl>
             <ApkStatus expiry={details?.apk} />
             <p className="muted">Geen beschikbare APK-datum is geen keuringsgarantie.</p>
+            <Link to={`/voertuigen/${vehicle.id}/apk`}>APK en gebreken bekijken</Link>
           </section>
 
           <section className="card maintenance-section" aria-labelledby="maintenance-title">
