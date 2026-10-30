@@ -1,58 +1,114 @@
 # MijnAutoManager
 
-Dit is mijn React-app voor de eindopdracht Frontend van NOVI. Met MijnAutoManager houd je je auto's op één plek bij. In deze eerste versie kun je een account maken, inloggen en uitloggen. Je ziet een overzicht van je auto's met een detailpagina, en je kunt op kenteken zoeken en een auto toevoegen. Onderhoud, APK-gebreken en garages zoeken bouw ik in de volgende stappen.
+Eindopdracht Frontend (NOVI Hogeschool). Een React-webapplicatie waarin je je eigen auto's bijhoudt: onderhoud vastleggen, de APK-datum en geregistreerde gebreken bekijken en een erkend bedrijf in de buurt zoeken.
 
-## Gebruikte technieken
+## Inhoudsopgave
 
-- React met Vite
-- React Router voor de pagina's
-- React Context voor de inlogsessie
-- Eigen CSS met Flexbox
-- Vitest en Testing Library voor de tests
+1. [Inleiding](#inleiding)
+2. [Screenshot](#screenshot)
+3. [Benodigdheden](#benodigdheden)
+4. [De applicatie draaien](#de-applicatie-draaien)
+5. [Overige commando's](#overige-commandos)
+6. [Testgebruikers en demogegevens](#testgebruikers-en-demogegevens)
+7. [Gebruikte API's](#gebruikte-apis)
+8. [Bekende beperkingen](#bekende-beperkingen)
+9. [Broncode](#broncode)
 
-## Installeren en starten
+## Inleiding
 
-Je hebt Node.js 22 of nieuwer en npm nodig.
+Autobezitters bewaren onderhoudsbonnen vaak los: in een la, in een mail of helemaal niet. MijnAutoManager zet alles per auto bij elkaar:
 
-```sh
-cd frontend
-npm ci
-npm run dev
-```
+- **Mijn auto's**: een overzicht van je eigen voertuigen, met de APK-status in tekst ("Verloopt binnenkort", "Vervaldatum verstreken", ...).
+- **Onderhoud**: beurten toevoegen, bewerken en verwijderen, met datum, omschrijving, kilometerstand en eventueel kosten, garage en notities.
+- **APK en gebreken**: de APK-vervaldatum en de bij de RDW geregistreerde gebreken van een kenteken, met de meest voorkomende gebreken.
+- **Garages zoeken**: erkende bedrijven zoeken op plaats en RDW-erkenning (bijvoorbeeld "APK Lichte voertuigen").
 
-Open daarna http://localhost:5173. Gebruik `localhost` en niet `127.0.0.1`, want de NOVI-backend accepteert alleen verzoeken vanaf localhost.
+Accounts, voertuigen en onderhoud staan in de NOVI Educational Backend. Voertuiggegevens, APK, gebreken en bedrijven komen live uit RDW Open Data.
 
-## Instellingen
+## Screenshot
 
-In `.env.example` staan de URL van de NOVI-backend en het project-ID. Deze waarden zijn openbaar en staan ook als standaardwaarde in de code. Wil je andere waarden gebruiken, maak dan een `.env.local` aan. Zet hier nooit wachtwoorden of tokens in, want VITE-variabelen zijn zichtbaar in de browser.
+![Voertuigpagina van MijnAutoManager](docs/screenshot.png)
 
-## Inloggen en de demo
+## Benodigdheden
 
-Je logt in met een account van de NOVI-backend. Na het inloggen haalt de app de gebruikerslijst op en zoekt het account met hetzelfde e-mailadres. Zo weet de app welk gebruikersnummer bij jou hoort. Alleen als er precies één match is, opent het overzicht. De sessie staat in `sessionStorage` en wordt bij uitloggen gewist.
+- [Node.js](https://nodejs.org/) versie 20 of hoger (getest met Node 22) en npm
+- Een moderne browser (Chrome, Firefox, Edge of Safari)
+- Een `.env`-bestand in de map `frontend` met deze twee variabelen (zie `.env.example`):
 
-Zonder account kun je op de inlogpagina **Bekijk de lokale demo** kiezen. De app werkt dan met fictieve voorbeeldauto's die alleen in je browsertabblad staan. Er gaat dan niets naar NOVI.
+| Variabele | Waarde | Uitleg |
+|---|---|---|
+| `VITE_NOVI_URL` | `https://novi-backend-api-wgsgz.ondigitalocean.app` | Adres van de NOVI Educational Backend |
+| `VITE_NOVI_PROJECT_ID` | `d153089f-ba2d-4564-912c-4204900eec14` | Project-id van deze opdracht; gaat mee als header `novi-education-project-id` |
 
-## Voertuigen
+Let op: alle `VITE_`-variabelen komen in de browsercode terecht. Zet hier dus nooit wachtwoorden of tokens in. RDW Open Data heeft geen sleutel nodig.
 
-- Het overzicht toont alleen de auto's die bij jouw gebruikersnummer horen.
-- Bij **Kenteken** kun je de fictieve demovoertuigen TESTA1, TESTA2 en TESTB1 opzoeken en toevoegen, met een bijnaam als je wilt.
-- Je kunt ook een echt kenteken opzoeken bij de RDW. Die gegevens kun je alleen bekijken en niet opslaan.
+## De applicatie draaien
 
-Let op: NOVI schermt voertuigen niet per account af. De app filtert alleen wat je ziet. Gebruik daarom alleen fictieve gegevens.
+1. Clone de repository en ga naar de map `frontend`:
+   ```bash
+   git clone https://github.com/ceylanaa/mijnautomanager-2.0.git
+   cd mijnautomanager-2.0/frontend
+   ```
+2. Installeer de packages:
+   ```bash
+   npm install
+   ```
+3. Maak het `.env`-bestand aan:
+   ```bash
+   cp .env.example .env
+   ```
+   Vervang daarna `jouw-novi-project-id` door de project-id uit de tabel hierboven.
+4. Start de ontwikkelserver:
+   ```bash
+   npm run dev
+   ```
+5. Open **http://localhost:5173** in je browser. Gebruik echt `localhost` en niet `127.0.0.1`: NOVI staat alleen `http://localhost:5173` toe (CORS).
 
-## Testen en bouwen
+## Overige commando's
 
-```sh
-npm test
-npm run build
-```
+| Commando | Wat het doet |
+|---|---|
+| `npm run dev` | Start de ontwikkelserver op http://localhost:5173 |
+| `npm run build` | Maakt een productieversie in de map `dist` |
+| `npm run preview` | Bekijkt de productieversie lokaal op http://localhost:5173 |
+| `npm test` | Draait de tests (Vitest en React Testing Library) |
 
-Er zijn 23 tests. Ze controleren onder andere inloggen, registreren, het filteren van voertuigen, het toevoegen van een auto en het zoeken bij de RDW. De tests gebruiken nep-antwoorden en sturen geen echte verzoeken naar NOVI of de RDW.
+## Testgebruikers en demogegevens
 
-## Bronnen
+**Lokale demo (zonder account):** klik op de inlogpagina op **Bekijk de lokale demo**. Je bent dan ingelogd als demogebruiker. Alles wordt alleen in `sessionStorage` van dit tabblad bewaard en er gaat niets naar NOVI.
 
-- [React](https://react.dev/)
-- [React Router](https://reactrouter.com/)
-- [NOVI-backend documentatie](https://novi-backend-api-wgsgz.ondigitalocean.app/swagger/project?projectId=d153089f-ba2d-4564-912c-4204900eec14)
-- [RDW Open Data: gekentekende voertuigen](https://opendata.rdw.nl/resource/m9d7-ebf2.json)
-- [RDW Open Data: brandstof](https://opendata.rdw.nl/resource/8ys7-d773.json)
+**NOVI-account:** maak zelf een account aan via **Registreren** en log daarna in. Er staan bewust geen wachtwoorden in deze README; een testaccount voor de beoordeling wordt apart aangeleverd.
+
+**Fictieve kentekens:** alleen deze demovoertuigen kunnen worden opgeslagen, zodat er geen echte kentekens van anderen in de database komen:
+
+| Kenteken | Voorbeeld | APK-datum |
+|---|---|---|
+| `TESTA1` | Stadsauto | over 20 dagen ("Verloopt binnenkort"), met fictieve gebreken |
+| `TESTA2` | Weekendauto | geen datum ("APK-datum niet beschikbaar") |
+| `TESTB1` | Familieauto | over 200 dagen |
+
+Echte kentekens kun je wel opzoeken (keuze "RDW bekijken (alleen lezen)" op de pagina Kenteken) en de APK en gebreken ervan bekijken, maar niet opslaan. Voorbeelden: `J588LK` of `H137HN`.
+
+## Gebruikte API's
+
+- [NOVI Educational Backend](https://novi-backend-api-wgsgz.ondigitalocean.app): `/api/users`, `/api/login`, `/api/vehicles`, `/api/maintenance` en `/api/vehicles/{id}/maintenance`
+- [RDW Open Data](https://opendata.rdw.nl/):
+  - `m9d7-ebf2`: gekentekende voertuigen (merk, model, APK-vervaldatum)
+  - `8ys7-d773`: brandstof
+  - `a34c-vvps`: geconstateerde gebreken
+  - `hx2c-gt7k`: omschrijvingen van gebrekcodes
+  - `5k74-3jha`: erkende bedrijven
+  - `nmwb-dqkz`: erkenningen per bedrijf
+
+Een uitgebreidere uitleg staat in het [verantwoordingsdocument](verantwoordingsdocument.md).
+
+## Bekende beperkingen
+
+- Alleen de fictieve demokentekens kunnen worden opgeslagen.
+- NOVI controleert niet zelf wie de eigenaar van een voertuig is; de app filtert op de ingelogde gebruiker.
+- Verwijderen van een voertuig met onderhoud gebeurt in losse stappen en is daardoor niet "alles of niets".
+- Er is geen wachtwoordherstel en geen afstandsberekening of afspraakreservering bij garages.
+
+## Broncode
+
+GitHub: https://github.com/ceylanaa/mijnautomanager-2.0
