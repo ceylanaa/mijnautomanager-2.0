@@ -153,7 +153,7 @@ Wat ik hiervan heb geleerd:
 - **Maak eerst een back-up-branch** (`git branch backup-voor-rebase`) voordat ik iets als een rebase doe. Dan kan ik altijd terug. Ook `git reflog` had me kunnen helpen; die kende ik toen nog niet goed.
 - **Schrijf meteen goede commitberichten en branchnamen.** Dan hoef je achteraf niets op te schonen. Ik houd nu de vorm `feat:`, `fix:`, `test:` en `docs:` aan, met een korte Nederlandse zin.
 - **Merge pull requests eerder** in plaats van ze lang op elkaar te stapelen. Hoe hoger de stapel, hoe meer er misgaat als je onderaan iets verandert.
-- **Gebruik nooit `git push --force` op een gedeelde branch.** Als het echt moet op mijn eigen branch, dan met `--force-with-lease`, zodat ik niet per ongeluk werk overschrijf.
+- **Gebruik nooit `git push --force` op een branch waar andere branches op voortbouwen.** Als het echt moet, dan met `--force-with-lease`, zodat ik niet per ongeluk commits op GitHub overschrijf die ik lokaal niet heb.
 
 Mijn conclusie is dat ik veel voorzichtiger moet zijn met een rebase. Het is handig om commits op te schonen die alleen nog op mijn eigen computer staan, maar niet voor commits die al op GitHub staan en waar andere branches op voortbouwen. Volgende keer kijk ik eerst welke branches van een branch afhangen en maak ik een back-up, voordat ik iets aan de geschiedenis verander.
 
