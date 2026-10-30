@@ -1,0 +1,18 @@
+.notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 18px 0;
+  padding: 16px 20px;
+  border: 1px solid #cee0d1;
+  border-radius: 10px;
+  background: var(--color-soft);
+}
+
+.notice.error {
+  border-color: #edc4b9;
+  background: var(--color-error-bg);
+  color: #8e3028;
+}

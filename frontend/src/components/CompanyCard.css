@@ -1,0 +1,12 @@
+.company-card h3 {
+  margin-top: 0;
+  overflow-wrap: anywhere;
+}
+
+.company-recognitions {
+  margin-top: 12px;
+}
+
+.company-recognitions ul {
+  padding-left: 1.25rem;
+}

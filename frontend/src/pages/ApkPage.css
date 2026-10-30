@@ -1,0 +1,46 @@
+.apk-layout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.apk-card,
+.apk-info {
+  flex: 1 1 300px;
+}
+
+.apk-card h2,
+.apk-info h2,
+.defects-card h2 {
+  margin-top: 0;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.defects-card table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.defects-card th,
+.defects-card td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.top-defects {
+  padding-left: 1.25rem;
+}
+
+.apk-layout > .apk-info {
+  margin: 0;
+}
+
+.defects-card h3 {
+  margin-top: 24px;
+}

@@ -1,0 +1,67 @@
+.vehicle-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.vehicle-card {
+  flex: 0 1 calc(50% - 12px);
+  min-width: 280px;
+  max-width: 550px;
+}
+
+.vehicle-card.attention {
+  background: var(--color-attention);
+  border-color: #ecd9a3;
+}
+
+.vehicle-card h2 {
+  margin: 4px 0 8px;
+}
+
+.vehicle-card p {
+  font-size: 0.9rem;
+}
+
+.car-mark {
+  margin-bottom: 26px;
+  padding: 20px;
+  border-radius: 12px;
+  background: #f0f4ee;
+  text-align: center;
+}
+
+.car-mark svg {
+  width: 180px;
+  height: 75px;
+  fill: none;
+  stroke: #48675d;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.vehicle-meta {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e4e9e4;
+}
+
+.vehicle-meta p {
+  margin: 8px 0 22px;
+  color: var(--color-muted);
+}
+
+@media (max-width: 850px) {
+  .vehicle-card {
+    flex: 1 1 calc(50% - 12px);
+  }
+}
+
+@media (max-width: 650px) {
+  .vehicle-card {
+    flex: 1 1 100%;
+    min-width: 0;
+    max-width: none;
+  }
+}

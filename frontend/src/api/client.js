@@ -3,7 +3,7 @@ import { demoVehicle, normalizePlate, ownVehicles, referenceId, uniqueUser, vali
 export class ApiError extends Error {
   constructor(message, status) { super(message); this.name = 'ApiError'; this.status = status; }
 }
-async function jsonRequest(url, options = {}) {
+export async function jsonRequest(url, options = {}) {
   const timeout = AbortSignal.timeout(15000);
   const signal = options.signal ? AbortSignal.any([options.signal, timeout]) : timeout;
   let response;
@@ -19,6 +19,12 @@ async function jsonRequest(url, options = {}) {
   if (response.status === 204) return null;
   try { return await response.json(); } catch { throw new ApiError('De server gaf een onverwacht antwoord.'); }
 }
+// Foutmelding bij een dubbel kenteken; existingId maakt een link naar het bestaande voertuig mogelijk.
+export function duplicateError(existingId) {
+  const error = new ApiError('Dit voertuig staat al in je overzicht.');
+  error.existingId = existingId;
+  return error;
+}
 function rows(value) {
   if (Array.isArray(value)) return value;
   if (Array.isArray(value?.data)) return value.data;
@@ -27,26 +33,51 @@ function rows(value) {
 export function createNoviApi({ baseUrl, projectId }) {
   const base = baseUrl.replace(/\/$/, '');
   function request(path, { token, body, ...options } = {}) {
+    if (!base || !projectId) {
+      return Promise.reject(new ApiError('De NOVI-configuratie ontbreekt. Maak een .env-bestand aan volgens de README en start de app opnieuw.'));
+    }
     return jsonRequest(`${base}/api${path}`, {
       ...options, headers: { 'novi-education-project-id': projectId, ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) },
       ...(body ? { body: JSON.stringify(body) } : {}),
     });
   }
-  async function vehicles(session, signal) {
+  // Haalt alle pagina's van een collectie op. Nooit een onvolledige lijst teruggeven alsof die compleet is.
+  async function allPages(path, session, signal) {
     const all = [], seen = new Set();
-    // Bounded paging: never return an incomplete list as if it were complete.
+    const separator = path.includes('?') ? '&' : '?';
     for (let offset = 0; offset < 10000; offset += 100) {
-      const page = rows(await request(`/vehicles?limit=100&offset=${offset}&sort=id`, { token: session.token, signal }));
+      const page = rows(await request(`${path}${separator}limit=100&offset=${offset}&sort=id`, { token: session.token, signal }));
       for (const row of page) {
         const id = referenceId(row.id);
-        if (id === null || seen.has(id)) throw new ApiError('De voertuiglijst kon niet volledig worden opgehaald. Controleer de paginering.');
+        if (id === null || seen.has(id)) throw new ApiError('De lijst kon niet volledig worden opgehaald. Controleer de paginering.');
         seen.add(id); all.push(row);
       }
-      if (page.length < 100) return ownVehicles(all, session.user.id);
+      if (page.length < 100) return all;
     }
-    throw new ApiError('De voertuiglijst is te groot om volledig te verwerken.');
+    throw new ApiError('De lijst is te groot om volledig te verwerken.');
+  }
+  async function vehicles(session, signal) {
+    return ownVehicles(await allPages('/vehicles', session, signal), session.user.id);
+  }
+  // Controleert vóór een wijziging of het record echt in het eigen gefilterde overzicht staat.
+  async function ownVehicle(session, vehicleId) {
+    const vehicle = (await vehicles(session)).find(v => referenceId(v.id) === referenceId(vehicleId));
+    if (!vehicle) throw new ApiError('Dit voertuig staat niet in jouw overzicht.');
+    return vehicle;
   }
   return {
+    request,
+    allPages,
+    ownVehicle,
+    async updateNickname(session, vehicleId, nickname) {
+      if (nickname.trim().length > 100) throw new ApiError('De bijnaam mag maximaal 100 tekens bevatten.');
+      await ownVehicle(session, vehicleId);
+      return request(`/vehicles/${vehicleId}`, { token: session.token, method: 'PATCH', body: { nickname: nickname.trim() } });
+    },
+    async deleteVehicle(session, vehicleId) {
+      await ownVehicle(session, vehicleId);
+      return request(`/vehicles/${vehicleId}`, { token: session.token, method: 'DELETE' });
+    },
     async register(email, password) {
       return request('/users', { method: 'POST', body: { email: email.trim(), password, roles: ['user'] } });
     },
@@ -73,13 +104,18 @@ export function createNoviApi({ baseUrl, projectId }) {
       if (!demoVehicle(licensePlate)) throw new ApiError('Alleen fictieve demovoertuigen kunnen worden opgeslagen.');
       if (nickname.trim().length > 100) throw new ApiError('De bijnaam mag maximaal 100 tekens bevatten.');
       const current = await vehicles(session);
-      if (current.some(v => normalizePlate(v.licensePlate) === licensePlate)) throw new ApiError('Dit voertuig staat al in je overzicht.');
+      const existing = current.find(v => normalizePlate(v.licensePlate) === licensePlate);
+      if (existing) throw duplicateError(existing.id);
+      let created;
       try {
-        await request('/vehicles', { token: session.token, method: 'POST', body: { userId: session.user.id, licensePlate, nickname: nickname.trim() } });
+        created = await request('/vehicles', { token: session.token, method: 'POST', body: { userId: session.user.id, licensePlate, nickname: nickname.trim() } });
       } catch (error) {
         if (error.status) throw error;
         throw new ApiError('De opslaguitkomst is onzeker. Open eerst Mijn auto\'s om te controleren of het voertuig al is toegevoegd, voordat je opnieuw opslaat.');
       }
+      if (referenceId(created?.id) !== null) return created;
+      // Geeft NOVI geen id terug, dan zoeken we het nieuwe voertuig op in het eigen overzicht.
+      return (await vehicles(session)).find(v => normalizePlate(v.licensePlate) === licensePlate) ?? null;
     },
   };
 }
@@ -96,7 +132,8 @@ export async function searchRdw(plate, signal) {
   if (!Array.isArray(fuelRows) || fuelRows.some(row => row.kenteken !== key)) throw new ApiError('De brandstofgegevens konden niet worden gekoppeld. Probeer het opnieuw.');
   return { licensePlate: key, brand: record.merk || 'Niet beschikbaar', model: record.handelsbenaming || 'Niet beschikbaar', year: record.datum_eerste_toelating?.slice(0, 4) || 'Niet beschikbaar', fuel: [...new Set(fuelRows.map(row => row.brandstof_omschrijving).filter(Boolean))].join(' / ') || 'Niet beschikbaar', apk: record.vervaldatum_apk, source: 'rdw' };
 }
+// De NOVI-instellingen komen uit .env (zie .env.example en README), niet uit de broncode.
 export const novi = createNoviApi({
-  baseUrl: import.meta.env.VITE_NOVI_URL || 'https://novi-backend-api-wgsgz.ondigitalocean.app',
-  projectId: import.meta.env.VITE_NOVI_PROJECT_ID || 'd153089f-ba2d-4564-912c-4204900eec14',
+  baseUrl: import.meta.env.VITE_NOVI_URL || '',
+  projectId: import.meta.env.VITE_NOVI_PROJECT_ID || '',
 });

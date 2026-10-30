@@ -1,0 +1,37 @@
+.apk-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 8px 0 16px;
+  font-size: 0.88rem;
+}
+
+.apk-label {
+  padding: 4px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: #ffffff;
+  font-weight: 600;
+}
+
+.apk-label.soon {
+  border-color: #d9b44a;
+  background: var(--color-attention);
+  color: #5c4300;
+}
+
+.apk-label.expired {
+  border-color: #e3a6a6;
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.apk-label.ok {
+  background: var(--color-soft);
+  color: #285e4b;
+}
+
+.apk-date {
+  color: var(--color-muted);
+}

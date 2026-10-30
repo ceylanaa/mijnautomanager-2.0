@@ -1,0 +1,117 @@
+.search-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 28px;
+}
+
+.search-layout > .card {
+  flex: 1;
+  min-width: 0;
+}
+
+.search-layout h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.search-mode {
+  margin: 22px 0;
+  padding: 0;
+  border: 0;
+}
+
+.search-mode legend {
+  margin-bottom: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.search-mode label {
+  display: block;
+  padding: 4px 0;
+  font-size: 0.86rem;
+}
+
+.search-mode input {
+  margin-right: 8px;
+  accent-color: var(--color-primary);
+}
+
+.search-card form > .button {
+  width: 100%;
+}
+
+.demo-plates {
+  margin-top: 26px;
+  padding-top: 22px;
+  border-top: 1px solid #e4e9e4;
+}
+
+.demo-plates p {
+  margin-bottom: 12px;
+  color: var(--color-muted);
+  font-size: 0.8rem;
+}
+
+.demo-plates button {
+  min-height: 44px;
+  margin: 0 8px 8px 0;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: #ffffff;
+  color: #285e4b;
+  font-size: 0.78rem;
+}
+
+.waiting {
+  border-style: dashed;
+  background: #ffffff60;
+}
+
+.result-placeholder {
+  padding: 40px 0 64px;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.result-placeholder > span {
+  color: #7e9988;
+  font-size: 50px;
+  line-height: 1.2;
+}
+
+.result-placeholder h3 {
+  margin: 20px 0 10px;
+  color: var(--color-text);
+}
+
+.result-card > .badge {
+  margin: 14px 0 18px;
+}
+
+.result-card h3 {
+  margin-bottom: 12px;
+  font-size: 1.35rem;
+}
+
+@media (max-width: 850px) {
+  .search-layout {
+    gap: 18px;
+  }
+
+  .search-layout > .card {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 650px) {
+  .search-layout {
+    flex-direction: column;
+  }
+
+  .search-layout > .card {
+    width: 100%;
+  }
+}

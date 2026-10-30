@@ -1,0 +1,26 @@
+.garage-form {
+  margin-bottom: 24px;
+}
+
+.garage-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 24px;
+}
+
+.garage-fields > .field {
+  flex: 1 1 240px;
+}
+
+.garage-results-title {
+  margin-top: 0;
+}
+
+.company-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+}

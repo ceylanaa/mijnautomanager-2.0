@@ -26,6 +26,11 @@ describe('eerste bouwstap', () => {
       expect(await attempt).toBe(false);
     } finally { loginMock.mockRestore(); }
   });
+  it('toont een 404-pagina bij een onbekend adres', () => {
+    open('/bestaat-niet');
+    expect(screen.getByRole('heading', { name: 'Deze pagina bestaat niet.' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Naar Inloggen' })).toBeInTheDocument();
+  });
   it('stuurt een directe privélink naar inloggen zonder verzoek', () => {
     const fetch = vi.fn(); vi.stubGlobal('fetch', fetch); open('/voertuigen/2');
     expect(screen.getByRole('heading', { name: 'Fijn dat je er bent.' })).toBeInTheDocument(); expect(fetch).not.toHaveBeenCalled();
@@ -40,9 +45,10 @@ describe('eerste bouwstap', () => {
     await user.click(screen.getByRole('button', { name: /Zoeken/ }));
     await user.type(screen.getByLabelText('Bijnaam (optioneel)'), 'Mijn weekendauto');
     await user.click(screen.getByRole('button', { name: 'Auto toevoegen' }));
-    expect(await screen.findByRole('heading', { name: 'Mijn weekendauto' })).toBeInTheDocument();
-    await user.click(screen.getAllByRole('link', { name: /Details/ })[1]);
     expect(await screen.findByRole('heading', { level: 1, name: 'Mijn weekendauto' })).toBeInTheDocument();
+    expect(screen.getByText('Het voertuig is toegevoegd aan je overzicht.')).toBeInTheDocument();
+    await user.click(screen.getByRole('link', { name: "← Mijn auto's" }));
+    expect(await screen.findByRole('heading', { name: 'Mijn weekendauto' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Uitloggen' }));
     expect(await screen.findByRole('heading', { name: 'Fijn dat je er bent.' })).toBeInTheDocument();
     expect(sessionStorage.getItem('mam-session')).toBeNull(); expect(fetch).not.toHaveBeenCalled();
