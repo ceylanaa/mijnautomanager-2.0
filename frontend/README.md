@@ -77,7 +77,16 @@ Let op: alle `VITE_`-variabelen komen in de browsercode terecht. Zet hier dus no
 
 **Lokale demo (zonder account):** klik op de inlogpagina op **Bekijk de lokale demo**. Je bent dan ingelogd als demogebruiker. Alles wordt alleen in `sessionStorage` van dit tabblad bewaard en er gaat niets naar NOVI.
 
-**NOVI-account:** maak zelf een account aan via **Registreren** en log daarna in. Er staan bewust geen wachtwoorden in deze README; een testaccount voor de beoordeling wordt apart aangeleverd.
+**Testaccount voor de beoordeling (NOVI):**
+
+| Gegeven | Waarde |
+|---|---|
+| E-mailadres / gebruikersnaam | `test-a@example.com` |
+| Wachtwoord | staat in het bestand `Inloggegevens testaccount.txt` in de hoofdmap van de inlevering |
+
+Er staan bewust geen wachtwoorden in deze README.
+
+**Eigen NOVI-account:** je kunt ook zelf een account aanmaken via **Registreren** en daarna inloggen.
 
 **Fictieve kentekens:** alleen deze demovoertuigen kunnen worden opgeslagen, zodat er geen echte kentekens van anderen in de database komen:
 
